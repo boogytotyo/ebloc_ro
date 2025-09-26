@@ -13,8 +13,6 @@ Integrare neoficială pentru [e-bloc.ro](https://www.e-bloc.ro) care aduce în H
 2. Instalează **e-Bloc Romania** și repornește Home Assistant.
 3. Settings → *Devices & services* → *Add integration* → **e-Bloc Romania**.
 
-> HACS redă README dacă `hacs.json` are `render_readme: true`. :contentReference[oaicite:2]{index=2}
-
 ### Manual
 Copiază folderul `custom_components/ebloc_ro` în `<config>/custom_components/` și repornește Home Assistant.
 
