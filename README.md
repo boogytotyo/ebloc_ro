@@ -38,7 +38,6 @@ e-bloc.ro nu oferă o API publică autentificată cu token; integrarea foloseșt
 
 ## Depanare
 - Dacă nu apar entitățile, verifică **logurile** (`home-assistant.log`) și re-autentifică în e-bloc.ro (cookie-urile pot expira).
-- Pentru HACS, verifică cerințele de publicare/structură (manifest, README, `hacs.json`). :contentReference[oaicite:3]{index=3}
-
+- Pentru HACS, verifică cerințele de publicare/structură (manifest, README, `hacs.json`).
 ## Licență
 [MIT](LICENSE)
