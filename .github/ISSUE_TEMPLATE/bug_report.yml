@@ -16,9 +16,9 @@ body:
     validations:
       required: true
   - type: input
-    id: apanova-ro-version
+    id: engie-ro-version
     attributes:
-      label: Versiune integrare apanova_ro
+      label: Versiune integrare engie_ro
       description: O vezi în HACS (dacă folosești) sau în manifest.
       placeholder: "v0.5.1"
     validations:
@@ -77,7 +77,7 @@ body:
       description: Atașează erorile din Home Assistant (Developer Tools → Logs). **Nu include secretele.**
       render: shell
       placeholder: |
-        Logger: custom_components.apanova_ro...
+        Logger: custom_components.engie_ro...
         Traceback (most recent call last):
         ...
   - type: textarea
