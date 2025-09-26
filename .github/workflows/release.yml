@@ -1,0 +1,41 @@
+name: Release
+run-name: "🚀 Release ${{ github.ref_name }} • build & publish"
+
+on:
+  push:
+    tags:
+      - "*.*.*"   # ex: 1.0.0 (fără 'v')
+
+jobs:
+  build-and-release:
+    name: "📦 Build & 📤 Publish"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v5
+
+      - name: 🧱 Build zip artifacts (HACS-compatible structure)
+        run: |
+          set -e
+          TAG="${GITHUB_REF_NAME}"  # ex: 1.0.0
+          mkdir -p build
+          # împachetăm CONȚINUTUL din custom_components/ebloc_ro (nu folderul în sine)
+          cd custom_components/ebloc_ro
+          zip -r "../../build/ebloc_ro-${TAG}.zip" . \
+            -x "__pycache__/*" -x "*.pyc" -x ".DS_Store"
+          cd - >/dev/null
+          # asset cu nume fix pentru HACS (filename din hacs.json este constant)
+          cp "build/ebloc_ro-${TAG}.zip" "build/ebloc_ro.zip"
+          # opțional: checksum pentru varianta versionată
+          sha256sum "build/ebloc_ro-${TAG}.zip" > "build/ebloc_ro-${TAG}.zip.sha256"
+
+      - name: 🏷️ Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            build/ebloc_ro-${{ github.ref_name }}.zip
+            build/ebloc_ro-${{ github.ref_name }}.zip.sha256
+            build/ebloc_ro.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
