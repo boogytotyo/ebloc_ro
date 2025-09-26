@@ -1,11 +1,35 @@
 {
-  "generated_at": "2025-09-26T14:28:08.921Z",
+  "generated_at": "2025-09-26T15:15:59.373Z",
   "top": [
     {
       "tag": "1.0.1",
       "name": "1.0.1 - initial stable version",
       "prerelease": false,
       "published_at": "2025-09-26T14:27:18Z",
+      "downloads": 1,
+      "assets": [
+        {
+          "name": "ebloc_ro-1.0.1.zip",
+          "download_count": 0,
+          "browser_download_url": "https://github.com/boogytotyo/ebloc_ro/releases/download/1.0.1/ebloc_ro-1.0.1.zip"
+        },
+        {
+          "name": "ebloc_ro-1.0.1.zip.sha256",
+          "download_count": 0,
+          "browser_download_url": "https://github.com/boogytotyo/ebloc_ro/releases/download/1.0.1/ebloc_ro-1.0.1.zip.sha256"
+        },
+        {
+          "name": "ebloc_ro.zip",
+          "download_count": 1,
+          "browser_download_url": "https://github.com/boogytotyo/ebloc_ro/releases/download/1.0.1/ebloc_ro.zip"
+        }
+      ]
+    },
+    {
+      "tag": "1.0.2",
+      "name": "ruff fix",
+      "prerelease": false,
+      "published_at": "2025-09-26T15:15:50Z",
       "downloads": 0,
       "assets": []
     }
