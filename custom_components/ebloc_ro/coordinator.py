@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from typing import Any, Dict
 import asyncio
 from datetime import datetime, timedelta
+from typing import Any
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
@@ -20,7 +20,9 @@ class EBlocCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         history_months: int = 6,
         update_interval: timedelta | None = timedelta(minutes=30),
     ) -> None:
-        super().__init__(hass, logger=None, name="eBloc Coordinator", update_interval=update_interval)
+        super().__init__(
+            hass, logger=None, name="eBloc Coordinator", update_interval=update_interval
+        )
         self.api = api
         self.history_months = max(1, int(history_months))
 
@@ -51,7 +53,9 @@ class EBlocCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
             async def _fetch_month(ym: str):
                 try:
-                    res = await asyncio.wait_for(self.api.get_index_contoare(luna=ym, pIdAp="-1"), timeout=10)
+                    res = await asyncio.wait_for(
+                        self.api.get_index_contoare(luna=ym, pIdAp="-1"), timeout=10
+                    )
                     return ym, res, None
                 except Exception as e:  # noqa: BLE001
                     return ym, {}, e

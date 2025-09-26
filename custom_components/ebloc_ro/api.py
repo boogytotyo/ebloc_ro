@@ -1,14 +1,15 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
 import json
 import logging
+from typing import Any
 
 from aiohttp import ClientSession
 
 _LOGGER = logging.getLogger(__name__)
 
 BASE_URL = "https://www.e-bloc.ro"
+
 
 # Excepții specifice integrării
 class EBlocAuthError(Exception):
@@ -21,7 +22,7 @@ class EBlocApi:
     def __init__(
         self,
         session: ClientSession,
-        cookies: Dict[str, str],
+        cookies: dict[str, str],
         user_agent: str = "HomeAssistant/ebloc_ro",
     ) -> None:
         self._session = session
@@ -30,7 +31,7 @@ class EBlocApi:
 
     # --- helpers -----------------------------------------------------------------
 
-    def headers(self) -> Dict[str, str]:
+    def headers(self) -> dict[str, str]:
         return {
             "Accept": "application/json, text/javascript, */*; q=0.01",
             "Content-Type": "application/x-www-form-urlencoded",
@@ -44,13 +45,15 @@ class EBlocApi:
 
     # --- endpoints ----------------------------------------------------------------
 
-    async def get_home_info(self) -> Dict[str, Any]:
+    async def get_home_info(self) -> dict[str, Any]:
         """
         /ajax/AjaxGetHomeApInfo.php
         Returnează date generale și luna afișată.
         """
         url = f"{BASE_URL}/ajax/AjaxGetHomeApInfo.php"
-        async with self._session.post(url, headers=self.headers(), cookies=self._cookies, timeout=30) as resp:
+        async with self._session.post(
+            url, headers=self.headers(), cookies=self._cookies, timeout=30
+        ) as resp:
             resp.raise_for_status()
             raw = await resp.text()
 
@@ -86,13 +89,15 @@ class EBlocApi:
         rows.sort(key=lambda r: r.get("luna", ""), reverse=True)
         return rows
 
-    async def get_index_luni(self) -> Dict[str, Any]:
+    async def get_index_luni(self) -> dict[str, Any]:
         """
         /ajax/AjaxGetIndexLuna.php (ori echivalent)
         Returnează lunile pentru care există index.
         """
         url = f"{BASE_URL}/ajax/AjaxGetIndexLuna.php"
-        async with self._session.post(url, headers=self.headers(), cookies=self._cookies, timeout=30) as resp:
+        async with self._session.post(
+            url, headers=self.headers(), cookies=self._cookies, timeout=30
+        ) as resp:
             resp.raise_for_status()
             raw = await resp.text()
 
@@ -104,7 +109,7 @@ class EBlocApi:
 
         return js
 
-    async def get_index_contoare(self, luna: str, pIdAp: str = "-1") -> Dict[str, Any]:
+    async def get_index_contoare(self, luna: str, pIdAp: str = "-1") -> dict[str, Any]:
         """
         /ajax/AjaxGetIndexContoare.php
         Returnează indexul pe contor(e) pentru luna dată.

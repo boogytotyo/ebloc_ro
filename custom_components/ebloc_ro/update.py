@@ -1,17 +1,14 @@
 from __future__ import annotations
-from .const import DOMAIN
-from .coordinator import EBlocCoordinator
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from homeassistant.helpers.entity import EntityCategory
-
-
 
 from homeassistant.components.update import UpdateEntity, UpdateEntityFeature
-from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import INTEGRATION_VERSION, RELEASES_URL
+from .const import DOMAIN, INTEGRATION_VERSION, RELEASES_URL
+from .coordinator import EBlocCoordinator
 
 
 async def async_setup_entry(
@@ -32,11 +29,9 @@ class EBlocRoUpdateEntity(CoordinatorEntity, UpdateEntity):
     _attr_release_url = RELEASES_URL
     _attr_supported_features = UpdateEntityFeature(0)
 
-    
-
     @property
     def supported_features(self) -> UpdateEntityFeature:
-        val = getattr(self, '_attr_supported_features', UpdateEntityFeature(0))
+        val = getattr(self, "_attr_supported_features", UpdateEntityFeature(0))
         if isinstance(val, UpdateEntityFeature):
             return val
         try:
