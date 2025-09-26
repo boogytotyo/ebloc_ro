@@ -20,9 +20,8 @@ Copiază folderul `custom_components/ebloc_ro` în `<config>/custom_components/`
 În onboarding, ți se vor cere:
 - **Cookie-uri e-bloc.ro** (ex. `PHPSESSID`, `asoc-cur`, `home-ap-cur`), folosite doar local pentru a apela API-urile e-bloc.
 - **History months** (opțional) — câte luni de istoric pentru indicii de contor.
+- Exemplu cookie: `username=email%40email.com; PHPSESSID=xxx123yyyy456zzz789; home-ap-cur=123_45; home-stat-cur=6; avizier-luna-cur=-; facturi-luna-cur=-; index-luna-cur=-; asoc-cur=123`
 <img width="1580" height="607" alt="image" src="https://github.com/user-attachments/assets/e910930a-848b-4eaf-92bf-0b9ad9dc4c66" />
-Exemplu cookie: `username`=email%40email.com;PHPSESSID=xxx123yyyy456zzz789;home-ap-cur=123_45;home-stat-cur=6;avizier-luna-cur=-;facturi-luna-cur=-;index-luna-cur=-;asoc-cur=123`
-
 
 ## Entități expuse
 
