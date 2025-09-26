@@ -1,120 +1,88 @@
-
 from __future__ import annotations
 
-import logging
-from datetime import timedelta, datetime
+from typing import Any, Dict
 import asyncio
+from datetime import datetime, timedelta
 
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .const import (
-    DOMAIN,
-    CONF_COOKIE,
-    CONF_HISTORY_MONTHS,
-    CONF_SCAN_INTERVAL_MIN,
-    DEFAULT_HISTORY_MONTHS,
-    DEFAULT_SCAN_INTERVAL_MIN,
-)
-from .api import EBlocAPI, EBlocAuthError
-
-_LOGGER = logging.getLogger(__name__)
+from .api import EBlocApi
 
 
-class EBlocCoordinator(DataUpdateCoordinator):
-    def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
-        self.hass = hass
-        self.entry = entry
-        session = async_get_clientsession(hass)
-        cookie = entry.data.get(CONF_COOKIE, "")
-        self.api = EBlocAPI(session, cookie)
+class EBlocCoordinator(DataUpdateCoordinator[dict[str, Any]]):
+    """Coordinator pentru integrarea e-Bloc RO."""
 
-        scan_min = entry.options.get(CONF_SCAN_INTERVAL_MIN, entry.data.get(CONF_SCAN_INTERVAL_MIN, DEFAULT_SCAN_INTERVAL_MIN))
-        super().__init__(
-            hass,
-            _LOGGER,
-            name="e-Bloc Romania",
-            update_interval=timedelta(minutes=int(scan_min)),
-        )
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        api: EBlocApi,
+        history_months: int = 6,
+        update_interval: timedelta | None = timedelta(minutes=30),
+    ) -> None:
+        super().__init__(hass, logger=None, name="eBloc Coordinator", update_interval=update_interval)
+        self.api = api
+        self.history_months = max(1, int(history_months))
 
-        self.history_months = int(entry.options.get(CONF_HISTORY_MONTHS, entry.data.get(CONF_HISTORY_MONTHS, DEFAULT_HISTORY_MONTHS)))
+        # (opțional) versiuni pentru update entity
+        self.integration_version: str | None = None
+        self.latest_version: str | None = None
 
-    async def _async_update_data(self):
+    async def _async_update_data(self) -> dict[str, Any]:
         try:
-            await self.api.discover()
             home = await self.api.get_home_info()
             luna = home.get("luna_afisata") or datetime.utcnow().strftime("%Y-%m")
-            index = await self.api.get_index_contoare(luna=luna, pIdAp="-1")
-            
-            # Build index history for configured months
-            from datetime import datetime as _dt
-            def _prev_months(start_ym: str, count: int):
-                y, m = [int(x) for x in start_ym.split('-')[:2]]
-                res = []
-                for i in range(count):
-                    yy, mm = y, m - i
-                    while mm <= 0:
-                        yy -= 1
-                        mm += 12
-                    res.append(f"{yy:04d}-{mm:02d}")
-                return res
 
-            months = _prev_months(luna, max(1, int(self.history_months)))
-            index_history = {}
-            latest_index = None
-            latest_date = None
-            for ym in months:
+            # Build index history pentru ultimele `history_months` luni
+            def _last_n_months_utc(n: int) -> list[str]:
+                now = datetime.utcnow()
+                y, m = now.year, now.month
+                out: list[str] = []
+                for i in range(n):
+                    yy = y - ((m - 1 - i) // 12)
+                    mm = ((m - 1 - i) % 12) + 1
+                    out.append(f"{yy:04d}-{mm:02d}")
+                return out  # [curent .. mai vechi]
+
+            months = _last_n_months_utc(self.history_months)
+            index_history: dict[str, int] = {ym: 0 for ym in months}
+            latest_index = 0
+            latest_month_idx = -1
+
+            async def _fetch_month(ym: str):
                 try:
-                    idx = await self.api.get_index_contoare(luna=ym, pIdAp="-1")
-                except asyncio.CancelledError:
-                    idx = {}  # soft-skip month on cancellation
-                except Exception:
-                    idx = {}
+                    res = await asyncio.wait_for(self.api.get_index_contoare(luna=ym, pIdAp="-1"), timeout=10)
+                    return ym, res, None
+                except Exception as e:  # noqa: BLE001
+                    return ym, {}, e
 
-                month_val = None
-                month_date = None
+            results = await asyncio.gather(*[_fetch_month(ym) for ym in months])
+
+            for ym, idx, _err in results:
+                month_val = 0
                 if isinstance(idx, dict):
                     for row in idx.values():
                         if isinstance(row, dict):
                             try:
                                 val = int(str(row.get("index_nou", "0")).strip() or 0)
                             except Exception:
-                                val = None
-                            dstr = row.get("data")
-                            try:
-                                dt = _dt.strptime(dstr, "%Y-%m-%d") if dstr else None
-                            except Exception:
-                                dt = None
-                            if val is not None:
-                                if month_date is None and month_val is None:
-                                    month_val, month_date = val, dt
-                                else:
-                                    if dt and (month_date is None or dt > month_date):
-                                        month_val, month_date = val, dt
-                                    elif month_date is None and (month_val is None or (isinstance(val, int) and val > month_val)):
-                                        month_val = val
-                if month_val is not None:
-                    index_history[ym] = month_val
-                    if latest_date is None and latest_index is None:
-                        latest_index, latest_date = month_val, month_date
-                    else:
-                        if month_date and (latest_date is None or month_date > latest_date):
-                            latest_index, latest_date = month_val, month_date
-                        elif latest_date is None and (latest_index is None or (isinstance(month_val, int) and month_val > latest_index)):
-                            latest_index = month_val
+                                val = 0
+                            if val > month_val:
+                                month_val = val
+                index_history[ym] = month_val
+                i_pos = months.index(ym)
+                if month_val > 0 and (latest_month_idx == -1 or i_pos < latest_month_idx):
+                    latest_month_idx = i_pos
+                    latest_index = month_val
 
             plati = await self.api.get_plati_chitante(months=self.history_months)
 
             return {
                 "home": home,
+                "luna": luna,
                 "index_history": index_history,
                 "latest_index": latest_index,
                 "plati": plati,
-                "luna": luna,
             }
-        except EBlocAuthError as err:
-            raise UpdateFailed(f"Auth error: {err}") from err
-        except Exception as err:  # noqa: BLE001
+        except Exception as err:
             raise UpdateFailed(str(err)) from err
