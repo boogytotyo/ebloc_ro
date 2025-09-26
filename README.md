@@ -2,7 +2,7 @@
 
 Integrare neoficială pentru [e-bloc.ro](https://www.e-bloc.ro) care aduce în Home Assistant:
 - **senzori** pentru date utilizator, facturi restante, istoric facturi, index contor
-- **entitatea de update** `update.ebloc_ro_update` pentru versiunea integrării (în stilul celorlalte proiecte ale tale)
+- **entitatea de update** `update.ebloc_ro_update` pentru versiunea integrării
 
 > Proiect open-source, fără afiliere la e-bloc.ro. Folosește sesiunea ta (cookie-uri) pentru a citi datele contului.
 
