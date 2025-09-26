@@ -1,0 +1,20 @@
+{
+  "domain": "ebloc_ro",
+  "name": "e-Bloc Romania",
+  "version": "1.0.1",
+  "documentation": "https://github.com/boogytotyo/ebloc_ro",
+  "issue_tracker": "https://github.com/boogytotyo/ebloc_ro/issues",
+  "codeowners": [
+    "@boogytotyo"
+  ],
+  "iot_class": "cloud_polling",
+  "integration_type": "hub",
+  "config_flow": true,
+  "requirements": [],
+  "after_dependencies": [
+    "http"
+  ],
+  "loggers": [
+    "custom_components.ebloc_ro"
+  ]
+}

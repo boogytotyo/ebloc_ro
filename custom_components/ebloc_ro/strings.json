@@ -1,0 +1,14 @@
+{
+  "title": "e-Bloc Romania",
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "cookie": "cookie",
+          "scan_interval_min": "scan_interval_min",
+          "history_months": "history_months"
+        }
+      }
+    }
+  }
+}

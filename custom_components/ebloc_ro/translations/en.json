@@ -1,0 +1,31 @@
+{
+  "title": "e-Bloc Romania",
+  "config": {
+    "step": {
+      "user": {
+        "title": "e-Bloc Login",
+        "description": "Paste your browser cookie (must include asoc-cur and home-ap-cur).",
+        "data": {
+          "cookie": "e-Bloc Cookie",
+          "scan_interval_min": "Refresh interval (minutes)",
+          "history_months": "History months"
+        }
+      }
+    },
+    "error": {
+      "auth": "Authentication failed. Check cookie.",
+      "unknown": "Unexpected error."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "e-Bloc Options",
+        "data": {
+          "scan_interval_min": "Refresh interval (minutes)",
+          "history_months": "History months"
+        }
+      }
+    }
+  }
+}

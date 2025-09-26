@@ -1,0 +1,31 @@
+{
+  "title": "e-Bloc Romania",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Autentificare e-Bloc",
+        "description": "Lipește cookie-ul de sesiune (trebuie să conțină asoc-cur și home-ap-cur).",
+        "data": {
+          "cookie": "Cookie e-Bloc",
+          "scan_interval_min": "Interval de actualizare (minute)",
+          "history_months": "Luni pentru istoric plăți"
+        }
+      }
+    },
+    "error": {
+      "auth": "Autentificare eșuată. Verifică cookie-ul.",
+      "unknown": "Eroare neașteptată."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opțiuni e-Bloc",
+        "data": {
+          "scan_interval_min": "Interval de actualizare (minute)",
+          "history_months": "Luni pentru istoric plăți"
+        }
+      }
+    }
+  }
+}
