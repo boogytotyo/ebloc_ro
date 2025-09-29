@@ -79,9 +79,9 @@ class EBlocAPI:
             raw = await resp.text()
             try:
                 js = json.loads(raw)
-            except Exception:
+            except Exception as err:
                 _LOGGER.debug("Home info raw: %s", raw[:200])
-                raise EBlocAuthError("Răspuns invalid la HomeApInfo")
+                raise EBlocAuthError("Răspuns invalid la HomeApInfo") from err
             return js.get("1", js)
 
     async def get_plati_chitante(self, months: int = 12) -> Dict[str, Any]:
@@ -93,9 +93,9 @@ class EBlocAPI:
             raw = await resp.text()
             try:
                 js = json.loads(raw)
-            except Exception:
+            except Exception as err:
                 _LOGGER.debug("Plati raw: %s", raw[:200])
-                raise EBlocAuthError("Răspuns invalid la PlatiChitante")
+                raise EBlocAuthError("Răspuns invalid la PlatiChitante") from err
             rows = [v for v in js.values() if isinstance(v, dict)]
             rows.sort(key=lambda r: r.get("luna", ""), reverse=True)
             limited = rows[:months] if months else rows
@@ -110,9 +110,9 @@ class EBlocAPI:
             raw = await resp.text()
             try:
                 js = json.loads(raw)
-            except Exception:
+            except Exception as err:
                 _LOGGER.debug("Index luni raw: %s", raw[:200])
-                raise EBlocAuthError("Răspuns invalid la IndexLuni")
+                raise EBlocAuthError("Răspuns invalid la IndexLuni") from err
             return js
 
     async def get_index_contoare(self, luna: str, pIdAp: str | int = -1) -> Dict[str, Any]:
@@ -124,7 +124,7 @@ class EBlocAPI:
             raw = await resp.text()
             try:
                 js = json.loads(raw)
-            except Exception:
+            except Exception as err:
                 _LOGGER.debug("Index contoare raw: %s", raw[:200])
-                raise EBlocAuthError("Răspuns invalid la IndexContoare")
+                raise EBlocAuthError("Răspuns invalid la IndexContoare") from err
             return js
