@@ -1,3 +1,4 @@
+
 from __future__ import annotations
 
 import logging
@@ -11,7 +12,7 @@ from .coordinator import EBlocCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS: list[str] = ["sensor", "update"]
+PLATFORMS: list[str] = ["sensor"]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
