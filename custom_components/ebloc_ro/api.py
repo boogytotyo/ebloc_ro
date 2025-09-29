@@ -1,131 +1,130 @@
+
 from __future__ import annotations
 
 import json
 import logging
-from typing import Any
+from typing import Any, Dict, Optional
 
-from aiohttp import ClientSession
+import aiohttp
+
+from .const import HEADER_UA
 
 _LOGGER = logging.getLogger(__name__)
 
-BASE_URL = "https://www.e-bloc.ro"
 
-
-# Excepții specifice integrării
 class EBlocAuthError(Exception):
-    """Ridicată când sesiunea/cookie-urile nu sunt valide sau răspunsul nu poate fi decodat."""
+    pass
 
 
-class EBlocApi:
-    """Client minimal pentru API-urile utilizate din e-bloc.ro."""
+class EBlocAPI:
+    BASE = "https://www.e-bloc.ro"
+    AJAX = BASE + "/ajax"
 
-    def __init__(
-        self,
-        session: ClientSession,
-        cookies: dict[str, str],
-        user_agent: str = "HomeAssistant/ebloc_ro",
-    ) -> None:
+    def __init__(self, session: aiohttp.ClientSession, cookie: str) -> None:
         self._session = session
-        self._cookies = cookies or {}
-        self._ua = user_agent
+        self._cookie = cookie.strip()
+        self.id_asoc: Optional[str] = None
+        self.id_ap: Optional[str] = None
 
-    # --- helpers -----------------------------------------------------------------
-
-    def headers(self) -> dict[str, str]:
+    def headers(self) -> Dict[str, str]:
         return {
+            "User-Agent": HEADER_UA,
             "Accept": "application/json, text/javascript, */*; q=0.01",
             "Content-Type": "application/x-www-form-urlencoded",
-            "Origin": BASE_URL,
-            "Referer": f"{BASE_URL}/",
-            "User-Agent": self._ua,
+            "Origin": self.BASE,
+            "Referer": self.BASE + "/index.php",
             "X-Requested-With": "XMLHttpRequest",
-            "Cache-Control": "no-cache",
-            "Pragma": "no-cache",
+            "Cookie": self._cookie,
         }
 
-    # --- endpoints ----------------------------------------------------------------
+    def _extract_ids_from_cookie(self) -> None:
+        ck = self._cookie
+        parts = {}
+        for p in ck.split(";"):
+            p = p.strip()
+            if "=" in p:
+                k, v = p.split("=", 1)
+                parts[k.strip()] = v.strip()
+        asoc = parts.get("asoc-cur")
+        home = parts.get("home-ap-cur")
+        if asoc:
+            self.id_asoc = asoc
+        if home and "_" in home:
+            try:
+                self.id_ap = home.split("_", 1)[1]
+            except Exception:
+                pass
 
-    async def get_home_info(self) -> dict[str, Any]:
-        """
-        /ajax/AjaxGetHomeApInfo.php
-        Returnează date generale și luna afișată.
-        """
-        url = f"{BASE_URL}/ajax/AjaxGetHomeApInfo.php"
-        async with self._session.post(
-            url, headers=self.headers(), cookies=self._cookies, timeout=30
-        ) as resp:
-            resp.raise_for_status()
+    async def discover(self) -> None:
+        """Validate cookie and extract asoc/ap identifiers by pinging an endpoint."""
+        self._extract_ids_from_cookie()
+        if not self.id_asoc:
+            raise EBlocAuthError("Cookie invalid: lipseste asoc-cur")
+        url = f"{self.AJAX}/AjaxGetHomeAp.php"
+        data = f"pIdAsoc={self.id_asoc}"
+        async with self._session.post(url, headers=self.headers(), data=data, timeout=20) as resp:
+            txt = await resp.text()
+            if resp.status != 200:
+                raise EBlocAuthError(f"HTTP {resp.status}")
+            if "login" in txt.lower() and "password" in txt.lower():
+                raise EBlocAuthError("Autentificare eșuată (redirect la login)")
+
+    async def get_home_info(self) -> Dict[str, Any]:
+        """AjaxGetHomeApInfo.php -> user & month info."""
+        url = f"{self.AJAX}/AjaxGetHomeApInfo.php"
+        if not self.id_asoc or not self.id_ap:
+            self._extract_ids_from_cookie()
+        data = f"pIdAsoc={self.id_asoc}&pIdAp={self.id_ap or '0'}"
+        async with self._session.post(url, headers=self.headers(), data=data, timeout=30) as resp:
             raw = await resp.text()
+            try:
+                js = json.loads(raw)
+            except Exception:
+                _LOGGER.debug("Home info raw: %s", raw[:200])
+                raise EBlocAuthError("Răspuns invalid la HomeApInfo")
+            return js.get("1", js)
 
-        try:
-            js = json.loads(raw)
-        except Exception as err:  # B904: păstrăm cauza
-            _LOGGER.debug("Home info raw: %s", raw[:200])
-            raise EBlocAuthError("Răspuns invalid la HomeApInfo") from err
-
-        # uneori răspunsul e în cheie "1"
-        return js.get("1", js)
-
-    async def get_plati_chitante(self, months: int) -> list[dict[str, Any]]:
-        """
-        /ajax/AjaxGetPlatiChitante.php
-        Returnează plățile/chitanțele, sortate descendent după 'luna'.
-        """
-        url = f"{BASE_URL}/ajax/AjaxGetPlatiChitante.php"
-        data = {"months": str(months)}
-        async with self._session.post(
-            url, headers=self.headers(), cookies=self._cookies, data=data, timeout=30
-        ) as resp:
-            resp.raise_for_status()
+    async def get_plati_chitante(self, months: int = 12) -> Dict[str, Any]:
+        url = f"{self.AJAX}/AjaxGetPlatiChitante.php"
+        if not self.id_asoc or not self.id_ap:
+            self._extract_ids_from_cookie()
+        data = f"pIdAsoc={self.id_asoc}&pIdAp={self.id_ap or '-1'}"
+        async with self._session.post(url, headers=self.headers(), data=data, timeout=30) as resp:
             raw = await resp.text()
+            try:
+                js = json.loads(raw)
+            except Exception:
+                _LOGGER.debug("Plati raw: %s", raw[:200])
+                raise EBlocAuthError("Răspuns invalid la PlatiChitante")
+            rows = [v for v in js.values() if isinstance(v, dict)]
+            rows.sort(key=lambda r: r.get("luna", ""), reverse=True)
+            limited = rows[:months] if months else rows
+            return {str(i + 1): r for i, r in enumerate(limited)}
 
-        try:
-            js = json.loads(raw)
-        except Exception as err:  # B904
-            _LOGGER.debug("Plati raw: %s", raw[:200])
-            raise EBlocAuthError("Răspuns invalid la PlatiChitante") from err
-
-        rows = [v for v in js.values() if isinstance(v, dict)]
-        rows.sort(key=lambda r: r.get("luna", ""), reverse=True)
-        return rows
-
-    async def get_index_luni(self) -> dict[str, Any]:
-        """
-        /ajax/AjaxGetIndexLuna.php (ori echivalent)
-        Returnează lunile pentru care există index.
-        """
-        url = f"{BASE_URL}/ajax/AjaxGetIndexLuna.php"
-        async with self._session.post(
-            url, headers=self.headers(), cookies=self._cookies, timeout=30
-        ) as resp:
-            resp.raise_for_status()
+    async def get_index_luni(self) -> Dict[str, Any]:
+        url = f"{self.AJAX}/AjaxGetIndexLuni.php"
+        if not self.id_asoc:
+            self._extract_ids_from_cookie()
+        data = f"pIdAsoc={self.id_asoc}"
+        async with self._session.post(url, headers=self.headers(), data=data, timeout=30) as resp:
             raw = await resp.text()
+            try:
+                js = json.loads(raw)
+            except Exception:
+                _LOGGER.debug("Index luni raw: %s", raw[:200])
+                raise EBlocAuthError("Răspuns invalid la IndexLuni")
+            return js
 
-        try:
-            js = json.loads(raw)
-        except Exception as err:  # B904
-            _LOGGER.debug("Index luni raw: %s", raw[:200])
-            raise EBlocAuthError("Răspuns invalid la IndexLuni") from err
-
-        return js
-
-    async def get_index_contoare(self, luna: str, pIdAp: str = "-1") -> dict[str, Any]:
-        """
-        /ajax/AjaxGetIndexContoare.php
-        Returnează indexul pe contor(e) pentru luna dată.
-        """
-        url = f"{BASE_URL}/ajax/AjaxGetIndexContoare.php"
-        data = {"pLuna": luna, "pIdAp": pIdAp}
-        async with self._session.post(
-            url, headers=self.headers(), cookies=self._cookies, data=data, timeout=30
-        ) as resp:
-            resp.raise_for_status()
+    async def get_index_contoare(self, luna: str, pIdAp: str | int = -1) -> Dict[str, Any]:
+        url = f"{self.AJAX}/AjaxGetIndexContoare.php"
+        if not self.id_asoc:
+            self._extract_ids_from_cookie()
+        data = f"pIdAsoc={self.id_asoc}&pLuna={luna}&pIdAp={pIdAp}"
+        async with self._session.post(url, headers=self.headers(), data=data, timeout=30) as resp:
             raw = await resp.text()
-
-        try:
-            js = json.loads(raw)
-        except Exception as err:  # B904
-            _LOGGER.debug("Index contoare raw: %s", raw[:200])
-            raise EBlocAuthError("Răspuns invalid la IndexContoare") from err
-
-        return js
+            try:
+                js = json.loads(raw)
+            except Exception:
+                _LOGGER.debug("Index contoare raw: %s", raw[:200])
+                raise EBlocAuthError("Răspuns invalid la IndexContoare")
+            return js
