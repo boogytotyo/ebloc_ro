@@ -46,8 +46,7 @@ class EBlocCoordinator(DataUpdateCoordinator):
             await self.api.discover()
             home = await self.api.get_home_info()
             luna = home.get("luna_afisata") or datetime.utcnow().strftime("%Y-%m")
-            index = await self.api.get_index_contoare(luna=luna, pIdAp="-1")
-            
+            await self.api.get_index_contoare(luna=luna, pIdAp='-1')
             # Build index history for configured months
             from datetime import datetime as _dt
             def _prev_months(start_ym: str, count: int):
