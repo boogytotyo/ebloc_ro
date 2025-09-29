@@ -1,3 +1,10 @@
+[![Release](https://img.shields.io/github/v/release/boogytotyo/ebloc_ro?display_name=tag&sort=semver)](https://github.com/boogytotyo/ebloc_ro/releases)
+[![🚀 Release](https://github.com/boogytotyo/ebloc_ro/actions/workflows/release.yml/badge.svg)](https://github.com/boogytotyo/ebloc_ro/actions/workflows/release.yml)
+[![Downloads](https://img.shields.io/github/downloads/boogytotyo/ebloc_ro/total.svg)](https://github.com/boogytotyo/ebloc_ro/releases)
+[![HACS Custom](https://img.shields.io/badge/HACS-Custom-blue.svg)](https://hacs.xyz/)
+[![🧹 Lint](https://github.com/boogytotyo/ebloc_ro/actions/workflows/lint.yml/badge.svg)](https://github.com/boogytotyo/ebloc_ro/actions/workflows/lint.yml)
+[![✅ Validate](https://github.com/boogytotyo/ebloc_ro/actions/workflows/validate.yml/badge.svg)](https://github.com/boogytotyo/ebloc_ro/actions/workflows/validate.yml)
+
 # e-Bloc Romania — Home Assistant custom integration
 
 Integrare neoficială pentru [e-bloc.ro](https://www.e-bloc.ro) care aduce în Home Assistant:
