@@ -1,3 +1,4 @@
+
 from __future__ import annotations
 
 import voluptuous as vol
@@ -5,15 +6,15 @@ from homeassistant import config_entries
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .api import EBlocAPI, EBlocAuthError
 from .const import (
-    CONF_COOKIE,
-    CONF_HISTORY_MONTHS,
-    CONF_SCAN_INTERVAL_MIN,
-    DEFAULT_HISTORY_MONTHS,
-    DEFAULT_SCAN_INTERVAL_MIN,
     DOMAIN,
+    CONF_COOKIE,
+    CONF_SCAN_INTERVAL_MIN,
+    CONF_HISTORY_MONTHS,
+    DEFAULT_SCAN_INTERVAL_MIN,
+    DEFAULT_HISTORY_MONTHS,
 )
+from .api import EBlocAPI, EBlocAuthError
 
 
 class EBlocConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -49,9 +50,7 @@ class EBlocConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             {
                 vol.Required(CONF_COOKIE): str,
                 vol.Optional(CONF_SCAN_INTERVAL_MIN, default=DEFAULT_SCAN_INTERVAL_MIN): int,
-                vol.Optional(CONF_HISTORY_MONTHS, default=DEFAULT_HISTORY_MONTHS): vol.All(
-                    int, vol.Range(min=1, max=120)
-                ),
+                vol.Optional(CONF_HISTORY_MONTHS, default=DEFAULT_HISTORY_MONTHS): vol.All(int, vol.Range(min=1, max=120)),
             }
         )
         return self.async_show_form(step_id="user", data_schema=data_schema, errors=errors)
@@ -68,14 +67,8 @@ class EBlocOptionsFlow(config_entries.OptionsFlow):
         data = self.entry.options or self.entry.data
         schema = vol.Schema(
             {
-                vol.Optional(
-                    CONF_SCAN_INTERVAL_MIN,
-                    default=data.get(CONF_SCAN_INTERVAL_MIN, DEFAULT_SCAN_INTERVAL_MIN),
-                ): int,
-                vol.Optional(
-                    CONF_HISTORY_MONTHS,
-                    default=data.get(CONF_HISTORY_MONTHS, DEFAULT_HISTORY_MONTHS),
-                ): vol.All(int, vol.Range(min=1, max=120)),
+                vol.Optional(CONF_SCAN_INTERVAL_MIN, default=data.get(CONF_SCAN_INTERVAL_MIN, DEFAULT_SCAN_INTERVAL_MIN)): int,
+                vol.Optional(CONF_HISTORY_MONTHS, default=data.get(CONF_HISTORY_MONTHS, DEFAULT_HISTORY_MONTHS)): vol.All(int, vol.Range(min=1, max=120)),
             }
         )
         return self.async_show_form(step_id="init", data_schema=schema)
