@@ -1,24 +1,22 @@
+
 from __future__ import annotations
 
 from homeassistant.components.sensor import SensorEntity
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import ATTRIBUTION, DOMAIN
+from .const import DOMAIN, ATTRIBUTION
 from .coordinator import EBlocCoordinator
 
 
-async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
-) -> None:
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback) -> None:
     coordinator: EBlocCoordinator = hass.data[DOMAIN][entry.entry_id]
     entities: list[SensorEntity] = []
     # Migrate old entity_ids that had the "e_bloc_" prefix
     try:
         from homeassistant.helpers import entity_registry as er
-
         er_reg = er.async_get(hass)
         rename_map = {
             "ebloc_date_utilizator": "sensor.ebloc_date_utilizator",
@@ -38,12 +36,12 @@ async def async_setup_entry(
     entities.append(EblocFacturaRestantaSensor(coordinator))
     entities.append(EblocIndexContorSensor(coordinator))
     entities.append(EblocIstoricFacturiSensor(coordinator))
-
+    
     entities.append(EblocDateUtilizatorSensor(coordinator))
     entities.append(EblocFacturaRestantaSensor(coordinator))
     entities.append(EblocIndexContorSensor(coordinator))
     entities.append(EblocIstoricFacturiSensor(coordinator))
-
+    
     async_add_entities(entities)
 
 
@@ -68,7 +66,6 @@ class EblocDateUtilizatorSensor(BaseEBlocSensor):
     @property
     def extra_state_attributes(self):
         h = (self.coordinator.data or {}).get("home", {})
-
         def fmt_lei(val):
             try:
                 return f"{float(str(val).replace(',', '.')):.2f} RON"
@@ -81,9 +78,7 @@ class EblocDateUtilizatorSensor(BaseEBlocSensor):
             "Persoane declarate": h.get("nr_pers_afisat"),
             "Restanță de plată": fmt_lei(h.get("datorie", "0")),
             "Ultima zi de plată": h.get("ultima_zi_plata"),
-            "Contor trimis": (
-                "Da" if str(h.get("contoare_citite", "0")) in ("1", "true", "True") else "Nu"
-            ),
+            "Contor trimis": "Da" if str(h.get("contoare_citite", "0")) in ("1", "true", "True") else "Nu",
             "Începere citire contoare": h.get("citire_contoare_start"),
             "Încheiere citire contoare": h.get("citire_contoare_end"),
             "Luna afișată": h.get("luna_afisata"),
@@ -122,13 +117,12 @@ class EblocIndexContorSensor(BaseEBlocSensor):
     @property
     def native_value(self):
         # latest index value computed in coordinator
-        return (getattr(self.coordinator, "data", {}) or {}).get("latest_index")
+        return (getattr(self.coordinator, 'data', {}) or {}).get('latest_index')
 
     @property
     def extra_state_attributes(self):
         # month -> index mapping for configured history
-        return (getattr(self.coordinator, "data", {}) or {}).get("index_history", {})
-
+        return (getattr(self.coordinator, 'data', {}) or {}).get('index_history', {})
 
 class EblocIstoricFacturiSensor(BaseEBlocSensor):
     _attr_name = "eBloc Istoric Facturi"
@@ -160,3 +154,5 @@ class EblocIstoricFacturiSensor(BaseEBlocSensor):
         # order desc by month key
         ordered = dict(sorted(months.items(), key=lambda kv: kv[0], reverse=True))
         return ordered
+
+
