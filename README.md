@@ -4,6 +4,7 @@
 [![HACS Custom](https://img.shields.io/badge/HACS-Custom-blue.svg)](https://hacs.xyz/)
 [![🧹 Lint](https://github.com/boogytotyo/ebloc_ro/actions/workflows/lint.yml/badge.svg)](https://github.com/boogytotyo/ebloc_ro/actions/workflows/lint.yml)
 [![✅ Validate](https://github.com/boogytotyo/ebloc_ro/actions/workflows/validate.yml/badge.svg)](https://github.com/boogytotyo/ebloc_ro/actions/workflows/validate.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 # e-Bloc Romania — Home Assistant custom integration
 
