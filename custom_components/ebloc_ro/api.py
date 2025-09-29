@@ -1,9 +1,8 @@
-
 from __future__ import annotations
 
 import json
 import logging
-from typing import Any, Dict, Optional
+from typing import Any
 
 import aiohttp
 
@@ -23,10 +22,10 @@ class EBlocAPI:
     def __init__(self, session: aiohttp.ClientSession, cookie: str) -> None:
         self._session = session
         self._cookie = cookie.strip()
-        self.id_asoc: Optional[str] = None
-        self.id_ap: Optional[str] = None
+        self.id_asoc: str | None = None
+        self.id_ap: str | None = None
 
-    def headers(self) -> Dict[str, str]:
+    def headers(self) -> dict[str, str]:
         return {
             "User-Agent": HEADER_UA,
             "Accept": "application/json, text/javascript, */*; q=0.01",
@@ -69,7 +68,7 @@ class EBlocAPI:
             if "login" in txt.lower() and "password" in txt.lower():
                 raise EBlocAuthError("Autentificare eșuată (redirect la login)")
 
-    async def get_home_info(self) -> Dict[str, Any]:
+    async def get_home_info(self) -> dict[str, Any]:
         """AjaxGetHomeApInfo.php -> user & month info."""
         url = f"{self.AJAX}/AjaxGetHomeApInfo.php"
         if not self.id_asoc or not self.id_ap:
@@ -84,7 +83,7 @@ class EBlocAPI:
                 raise EBlocAuthError("Răspuns invalid la HomeApInfo") from err
             return js.get("1", js)
 
-    async def get_plati_chitante(self, months: int = 12) -> Dict[str, Any]:
+    async def get_plati_chitante(self, months: int = 12) -> dict[str, Any]:
         url = f"{self.AJAX}/AjaxGetPlatiChitante.php"
         if not self.id_asoc or not self.id_ap:
             self._extract_ids_from_cookie()
@@ -101,7 +100,7 @@ class EBlocAPI:
             limited = rows[:months] if months else rows
             return {str(i + 1): r for i, r in enumerate(limited)}
 
-    async def get_index_luni(self) -> Dict[str, Any]:
+    async def get_index_luni(self) -> dict[str, Any]:
         url = f"{self.AJAX}/AjaxGetIndexLuni.php"
         if not self.id_asoc:
             self._extract_ids_from_cookie()
@@ -115,7 +114,7 @@ class EBlocAPI:
                 raise EBlocAuthError("Răspuns invalid la IndexLuni") from err
             return js
 
-    async def get_index_contoare(self, luna: str, pIdAp: str | int = -1) -> Dict[str, Any]:
+    async def get_index_contoare(self, luna: str, pIdAp: str | int = -1) -> dict[str, Any]:
         url = f"{self.AJAX}/AjaxGetIndexContoare.php"
         if not self.id_asoc:
             self._extract_ids_from_cookie()
