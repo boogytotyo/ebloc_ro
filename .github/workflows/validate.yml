@@ -26,5 +26,3 @@ jobs:
         uses: hacs/action@main
         with:
           category: "integration"
-          # Dacă nu ai încă logo/icon în brands, poți ignora temporar:
-          ignore: "brands"
