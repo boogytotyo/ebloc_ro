@@ -8,7 +8,7 @@ DEFAULT_SCAN_INTERVAL_MIN = 60
 DEFAULT_HISTORY_MONTHS = 12
 
 ATTRIBUTION = "Date furnizate de e-Bloc.ro"
-INTEGRATION_VERSION = "1.0.2"
+INTEGRATION_VERSION = "1.0.3"
 RELEASES_URL = "https://github.com/boogytotyo/ebloc_ro/releases"
 
 HEADER_UA = (
