@@ -1,5 +1,36 @@
 from __future__ import annotations
 
+import re
+
+def _parse_amount(value) -> float:
+    """Parse amounts like '270,49', '270.49', '27049', '270.49 RON', '270,49 RON'."""
+    s = str(value).strip()
+    if not s:
+        return 0.0
+    original = s
+    cleaned = re.sub(r"[^0-9,.\-]", "", s)
+    if "," in cleaned and "." in cleaned:
+        if cleaned.rfind(",") > cleaned.rfind("."):
+            dec = ","; thou = "."
+        else:
+            dec = "."; thou = ","
+        cleaned = cleaned.replace(thou, "").replace(dec, ".")
+    elif "," in cleaned:
+        cleaned = cleaned.replace(".", "").replace(",", ".")
+    else:
+        parts = cleaned.split(".")
+        if len(parts) > 2:
+            cleaned = "".join(parts[:-1]) + "." + parts[-1]
+    try:
+        val = float(cleaned)
+    except Exception:
+        digits = re.sub(r"[^0-9\-]", "", original)
+        val = float(int(digits))/100.0 if digits else 0.0
+    if val >= 1000 and ("," not in original and "." not in original):
+        val = val/100.0
+    return round(val, 2)
+
+
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
