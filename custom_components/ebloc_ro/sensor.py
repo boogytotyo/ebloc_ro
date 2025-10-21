@@ -2,35 +2,6 @@ from __future__ import annotations
 
 import re
 
-def _parse_amount(value) -> float:
-    """Parse amounts like '270,49', '270.49', '27049', '270.49 RON', '270,49 RON'."""
-    s = str(value).strip()
-    if not s:
-        return 0.0
-    original = s
-    cleaned = re.sub(r"[^0-9,.\-]", "", s)
-    if "," in cleaned and "." in cleaned:
-        if cleaned.rfind(",") > cleaned.rfind("."):
-            dec = ","; thou = "."
-        else:
-            dec = "."; thou = ","
-        cleaned = cleaned.replace(thou, "").replace(dec, ".")
-    elif "," in cleaned:
-        cleaned = cleaned.replace(".", "").replace(",", ".")
-    else:
-        parts = cleaned.split(".")
-        if len(parts) > 2:
-            cleaned = "".join(parts[:-1]) + "." + parts[-1]
-    try:
-        val = float(cleaned)
-    except Exception:
-        digits = re.sub(r"[^0-9\-]", "", original)
-        val = float(int(digits))/100.0 if digits else 0.0
-    if val >= 1000 and ("," not in original and "." not in original):
-        val = val/100.0
-    return round(val, 2)
-
-
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -41,11 +12,54 @@ from .const import ATTRIBUTION, DOMAIN
 from .coordinator import EBlocCoordinator
 
 
+def _parse_amount(value) -> float:
+    """Parse amounts like '270,49', '270.49', '27049', '270.49 RON', '270,49 RON'."""
+    s = str(value).strip()
+    if not s:
+        return 0.0
+
+    original = s
+    # Păstrăm doar cifre, separator decimal și minus
+    cleaned = re.sub(r"[^0-9,.\-]", "", s)
+
+    if "," in cleaned and "." in cleaned:
+        # Alege separatorul decimal după ultima apariție
+        if cleaned.rfind(",") > cleaned.rfind("."):
+            dec = ","
+            thou = "."
+        else:
+            dec = "."
+            thou = ","
+        cleaned = cleaned.replace(thou, "").replace(dec, ".")
+    elif "," in cleaned:
+        # Virgula ca decimal; punctul ca mii
+        cleaned = cleaned.replace(".", "").replace(",", ".")
+    else:
+        # Doar puncte sau fără separatori -> normalizează mai multe puncte
+        parts = cleaned.split(".")
+        if len(parts) > 2:
+            cleaned = "".join(parts[:-1]) + "." + parts[-1]
+
+    try:
+        val = float(cleaned)
+    except Exception:
+        # Fallback: tratează un șir numeric simplu ca bani (ex. '27049' -> 270.49)
+        digits = re.sub(r"[^0-9\-]", "", original)
+        val = float(int(digits)) / 100.0 if digits else 0.0
+
+    # Heuristic: dacă nu exista niciun separator în original și numărul e mare, probabil e în bani
+    if val >= 1000 and ("," not in original and "." not in original):
+        val = val / 100.0
+
+    return round(val, 2)
+
+
 async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
     coordinator: EBlocCoordinator = hass.data[DOMAIN][entry.entry_id]
     entities: list[SensorEntity] = []
+
     # Migrate old entity_ids that had the "e_bloc_" prefix
     try:
         from homeassistant.helpers import entity_registry as er
@@ -63,12 +77,8 @@ async def async_setup_entry(
             if ent and ent.startswith("sensor.e_bloc_"):
                 er_reg.async_update_entity(ent, new_entity_id=target_eid)
     except Exception:
+        # best-effort; nu blocăm setup-ul
         pass
-
-    entities.append(EblocDateUtilizatorSensor(coordinator))
-    entities.append(EblocFacturaRestantaSensor(coordinator))
-    entities.append(EblocIndexContorSensor(coordinator))
-    entities.append(EblocIstoricFacturiSensor(coordinator))
 
     entities.append(EblocDateUtilizatorSensor(coordinator))
     entities.append(EblocFacturaRestantaSensor(coordinator))
@@ -102,7 +112,7 @@ class EblocDateUtilizatorSensor(BaseEBlocSensor):
 
         def fmt_lei(val):
             try:
-                return f"{float(str(val).replace(',', '.')):.2f} RON"
+                return f"{_parse_amount(val):.2f} RON"
             except Exception:
                 return str(val)
 
@@ -130,8 +140,9 @@ class EblocFacturaRestantaSensor(BaseEBlocSensor):
     @property
     def native_value(self):
         h = (self.coordinator.data or {}).get("home", {})
+        val = h.get("datorie", "0")
         try:
-            return round(float(str(h.get("datorie", "0")).replace(",", ".")), 2)
+            return _parse_amount(val)
         except Exception:
             return 0.0
 
