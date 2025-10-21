@@ -9,5 +9,5 @@
   "issue_tracker": "https://github.com/boogytotyo/ebloc_ro/issues",
   "loggers": ["custom_components.ebloc_ro"],
   "requirements": [],
-  "version": "1.0.2"
+  "version": "1.0.3"
 }
