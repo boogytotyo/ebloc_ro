@@ -1,28 +1,28 @@
 {
-  "generated_at": "2025-10-21T08:34:47.795Z",
+  "generated_at": "2025-10-22T02:15:25.477Z",
   "repository": "boogytotyo/ebloc_ro",
-  "total_downloads": 6,
+  "total_downloads": 10,
   "per_release": [
     {
       "tag": "1.0.3",
       "name": "fix factura restanta",
       "prerelease": false,
       "published_at": "2025-10-21T08:34:33Z",
-      "downloads": 0,
+      "downloads": 4,
       "assets": [
         {
           "name": "ebloc_ro-1.0.3.zip",
-          "download_count": 0,
+          "download_count": 1,
           "browser_download_url": "https://github.com/boogytotyo/ebloc_ro/releases/download/1.0.3/ebloc_ro-1.0.3.zip"
         },
         {
           "name": "ebloc_ro-1.0.3.zip.sha256",
-          "download_count": 0,
+          "download_count": 1,
           "browser_download_url": "https://github.com/boogytotyo/ebloc_ro/releases/download/1.0.3/ebloc_ro-1.0.3.zip.sha256"
         },
         {
           "name": "ebloc_ro.zip",
-          "download_count": 0,
+          "download_count": 2,
           "browser_download_url": "https://github.com/boogytotyo/ebloc_ro/releases/download/1.0.3/ebloc_ro.zip"
         }
       ]
@@ -80,19 +80,19 @@
     {
       "tag": "1.0.3",
       "name": "ebloc_ro-1.0.3.zip",
-      "download_count": 0,
+      "download_count": 1,
       "browser_download_url": "https://github.com/boogytotyo/ebloc_ro/releases/download/1.0.3/ebloc_ro-1.0.3.zip"
     },
     {
       "tag": "1.0.3",
       "name": "ebloc_ro-1.0.3.zip.sha256",
-      "download_count": 0,
+      "download_count": 1,
       "browser_download_url": "https://github.com/boogytotyo/ebloc_ro/releases/download/1.0.3/ebloc_ro-1.0.3.zip.sha256"
     },
     {
       "tag": "1.0.3",
       "name": "ebloc_ro.zip",
-      "download_count": 0,
+      "download_count": 2,
       "browser_download_url": "https://github.com/boogytotyo/ebloc_ro/releases/download/1.0.3/ebloc_ro.zip"
     },
     {
