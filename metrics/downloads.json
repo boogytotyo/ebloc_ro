@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-11-23T07:47:03.243Z",
+  "generated_at": "2026-11-24T09:59:31.011Z",
   "repository": "boogytotyo/ebloc_ro",
-  "total_downloads": 16,
+  "total_downloads": 17,
   "per_release": [
     {
       "tag": "1.0.3",
       "name": "fix factura restanta",
       "prerelease": false,
       "published_at": "2025-10-21T08:34:33Z",
-      "downloads": 10,
+      "downloads": 11,
       "assets": [
         {
           "name": "ebloc_ro-1.0.3.zip",
@@ -22,7 +22,7 @@
         },
         {
           "name": "ebloc_ro.zip",
-          "download_count": 8,
+          "download_count": 9,
           "browser_download_url": "https://github.com/boogytotyo/ebloc_ro/releases/download/1.0.3/ebloc_ro.zip"
         }
       ]
@@ -92,7 +92,7 @@
     {
       "tag": "1.0.3",
       "name": "ebloc_ro.zip",
-      "download_count": 8,
+      "download_count": 9,
       "browser_download_url": "https://github.com/boogytotyo/ebloc_ro/releases/download/1.0.3/ebloc_ro.zip"
     },
     {
